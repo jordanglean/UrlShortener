@@ -65,5 +65,7 @@ func handleShorten(c *gin.Context) {
 	shortenUrl.CreatedAt = time.Now()
 	shortenUrl.ShortURL = "http://localhost:8080/url/" + shortCode
 
+	db.DB.Create(&shortenUrl)
+
 	c.JSON(http.StatusCreated, shortenUrl)
 }

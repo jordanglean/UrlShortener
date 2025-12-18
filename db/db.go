@@ -10,14 +10,17 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	db, err := gorm.Open(sqlite.Open("data.db"), &gorm.Config{})
+
+	var err error
+
+	DB, err = gorm.Open(sqlite.Open("data.db"), &gorm.Config{})
 
 	if err != nil {
 		logger.Error("Error connecting to database: ", err)
 		return
 	}
 
-	err = db.AutoMigrate(&models.ShortenURL{})
+	err = DB.AutoMigrate(&models.ShortenURL{})
 	if err != nil {
 		logger.Error("Error creating table migration: ", err)
 		return

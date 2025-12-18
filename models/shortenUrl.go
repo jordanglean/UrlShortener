@@ -3,7 +3,6 @@ package models
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"time"
 )
 
@@ -13,10 +12,6 @@ type ShortenURL struct {
 	ShortURL    string    `json:"short_url"`
 	CreatedAt   time.Time `json:"created_at"`
 	UserID      string    `json:"user_id" binding:"required"`
-}
-
-func (s *ShortenURL) Save() {
-	fmt.Println("URL: ", s)
 }
 
 func GetAllShortenURL() {
