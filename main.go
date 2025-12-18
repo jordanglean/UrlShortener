@@ -1,25 +1,26 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
+	"net/http"
+	"time"
 
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/jordanglean/UrlShortener/db"
+	"github.com/jordanglean/UrlShortener/models"
 )
 
 type ShortenRequest struct {
 	URL string `json:"url" binding:"required"`
 }
 
-type ShortenResponse struct {
-	OriginalURL string `json:"original_url"`
-	ShortCode   string `json:"short_code"`
-	ShortURL    string `json:short_url`
-}
-
 var urlStore = make(map[string]string)
 
 func main() {
+
+	// Init Database
+	db.InitDB()
+
 	router := gin.Default()
 
 	{
@@ -45,27 +46,24 @@ func handleRedirect(c *gin.Context) {
 }
 
 func handleShorten(c *gin.Context) {
-	var req ShortenRequest
+	var shortenUrl models.ShortenURL
 
-	if err := c.ShouldBindBodyWithJSON(&req); err != nil {
-		c.JSON(400, gin.H{
-			"error": "url is required",
+	err := c.ShouldBindJSON(&shortenUrl)
+
+	if err != nil {
+		logger.Error(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Error binding request to json",
+			"error":   err,
 		})
 		return
 	}
 
-	code := generateURLCode(6)
-	urlStore[code] = req.URL
+	shortCode := models.GenerateURLCode(6)
 
-	c.JSON(200, ShortenResponse{
-		OriginalURL: req.URL,
-		ShortCode:   code,
-		ShortURL:    "http://localhost:8080/url/" + code,
-	})
-}
+	shortenUrl.ShortCode = shortCode
+	shortenUrl.CreatedAt = time.Now()
+	shortenUrl.ShortURL = "http://localhost:8080/url/" + shortCode
 
-func generateURLCode(length int) string {
-	bytes := make([]byte, length)
-	rand.Read(bytes)
-	return base64.RawURLEncoding.EncodeToString(bytes)[:length]
+	c.JSON(http.StatusCreated, shortenUrl)
 }
