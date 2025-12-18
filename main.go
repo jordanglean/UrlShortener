@@ -10,12 +10,6 @@ import (
 	"github.com/jordanglean/UrlShortener/models"
 )
 
-type ShortenRequest struct {
-	URL string `json:"url" binding:"required"`
-}
-
-var urlStore = make(map[string]string)
-
 func main() {
 
 	// Init Database
@@ -33,16 +27,21 @@ func main() {
 }
 
 func handleRedirect(c *gin.Context) {
-	code := c.Param("id")
+	shortCode := c.Param("id")
 
-	if url, exists := urlStore[code]; exists {
-		c.Redirect(302, url)
+	var shortenUrlData models.ShortenURL
+	result := db.DB.First(&shortenUrlData, "short_code = ?", shortCode)
+
+	if result.Error != nil {
+		logger.Debug("Error fetching shorten url", result.Error)
+		c.JSON(http.StatusNotFound, gin.H{
+			"message": "Error fetching shorten url",
+			"error":   result.Error,
+		})
 		return
 	}
 
-	c.JSON(404, gin.H{
-		"error": "not found",
-	})
+	c.Redirect(http.StatusMovedPermanently, shortenUrlData.OriginalURL)
 }
 
 func handleShorten(c *gin.Context) {
