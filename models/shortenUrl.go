@@ -3,6 +3,7 @@ package models
 import (
 	"crypto/rand"
 	"encoding/base64"
+	"github.com/google/uuid"
 	"time"
 )
 
@@ -11,11 +12,8 @@ type ShortenURL struct {
 	ShortCode   string    `json:"short_code"`
 	ShortURL    string    `json:"short_url"`
 	CreatedAt   time.Time `json:"created_at"`
-	UserID      string    `json:"user_id" binding:"required"`
-}
-
-func GetAllShortenURL() {
-
+	UserID      uuid.UUID `json:"user_id" binding:"required"`
+	User        User      `json:"user" gorm:"foreignKey:UserID"  binding:"-"`
 }
 
 func GenerateURLCode(length int) string {

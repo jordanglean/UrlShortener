@@ -26,4 +26,10 @@ func InitDB() {
 		return
 	}
 
+	err = DB.AutoMigrate(&models.User{})
+	if err != nil {
+		logger.Error("Error creating table migration: ", err)
+		return
+	}
+
 }
