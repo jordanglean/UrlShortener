@@ -54,3 +54,36 @@ func HandleURLShorten(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, shortenUrl)
 }
+
+func HandleGetURLByUserID(c *gin.Context) {
+
+	var query struct {
+		UserID string `form:"userId" binding:"required"`
+	}
+
+	err := c.ShouldBindQuery(&query)
+
+	if err != nil {
+		logger.Error("Error binding query")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "userId query parameter is required",
+		})
+	}
+
+	var urls []models.ShortenURL
+
+	result := db.DB.Where("user_id = ?", query.UserID).Find(&urls)
+
+	if result.Error != nil {
+		logger.Debug("Can't find url for the user")
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "error fetching urls",
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"urls":  urls,
+		"count": len(urls),
+	})
+
+}

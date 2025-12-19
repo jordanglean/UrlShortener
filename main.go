@@ -17,6 +17,7 @@ func main() {
 		url := router.Group("/url")
 		url.POST("/shorten", handlers.HandleURLShorten)
 		url.GET("/:id", handlers.HandleURLRedirect)
+		url.GET("", handlers.HandleGetURLByUserID)
 	}
 	{
 		user := router.Group("/user")
